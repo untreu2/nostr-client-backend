@@ -1,3 +1,4 @@
+// Import necessary packages from nostr-tools
 import { hexToBytes, bytesToHex } from '@noble/hashes/utils';
 import { finalizeEvent, generateSecretKey, getPublicKey } from 'nostr-tools/pure';
 import { Relay } from 'nostr-tools/relay';
