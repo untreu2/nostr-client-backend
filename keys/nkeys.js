@@ -1,3 +1,4 @@
+// Import necessary packages from nostr-tools
 const { generateSecretKey, getPublicKey } = require('nostr-tools/pure');
 const nip19 = require('nostr-tools/nip19');
 const { bytesToHex, hexToBytes } = require('@noble/hashes/utils');
