@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDK CDN</title>
+    <script src="https://unpkg.com/@nostr-dev-kit/ndk@latest"></script>
+    <script>
+        let ndk;
+        let npub;
+
+        function initializeNDK(relays) {
+            ndk = new NDK({
+                explicitRelayUrls: relays
+            });
+
+            ndk.connect().then(() => {
+                console.log('Connected to relays:', relays);
+                window.flutter_inappwebview.callHandler('connected', 'Connected to relays: ' + relays);
+            }).catch((error) => {
+                console.error('Error connecting to relays:', error);
+                window.flutter_inappwebview.callHandler('error', 'Error: ' + error);
+            });
+        }
+
+        function generateNpub(nsec) {
+            npub = ndk.utils.getPublicKey(nsec);
+            console.log('Generated npub:', npub);
+            window.flutter_inappwebview.callHandler('npubGenerated', npub);
+        }
+
+        function createAndPublishEvent(content, nsec) {
+            const event = new NDKEvent(ndk);
+            event.kind = 1;
+            event.content = content;
+
+            ndk.utils.signEvent(event, nsec).then(() => {
+                event.publish().then(() => {
+                    console.log('Event published:', event);
+                    window.flutter_inappwebview.callHandler('eventPublished', event.id);
+                }).catch((error) => {
+                    console.error('Error publishing event:', error);
+                    window.flutter_inappwebview.callHandler('error', 'Error: ' + error);
+                });
+            });
+        }
+
+        function fetchUserProfile(npub) {
+            const user = ndk.getUser({ npub: npub });
+
+            user.fetchProfile().then(() => {
+                console.log('Fetched profile:', user.profile);
+                window.flutter_inappwebview.callHandler('profileFetched', JSON.stringify(user.profile));
+            }).catch((error) => {
+                console.error('Error fetching profile:', error);
+                window.flutter_inappwebview.callHandler('error', 'Error: ' + error);
+            });
+        }
+
+        function fetchEvents(authorNpub, kind = 1) {
+            const filter = {
+                kinds: [kind],
+                authors: [authorNpub]
+            };
+
+            ndk.fetchEvents(filter).then((events) => {
+                console.log('Fetched events:', events);
+                window.flutter_inappwebview.callHandler('eventsFetched', JSON.stringify(events));
+            }).catch((error) => {
+                console.error('Error fetching events:', error);
+                window.flutter_inappwebview.callHandler('error', 'Error: ' + error);
+            });
+        }
+
+        function reactToEvent(eventId, reaction) {
+            ndk.fetchEvent({ ids: [eventId] }).then((event) => {
+                event.react(reaction).then(() => {
+                    console.log('Reacted to event:', eventId, reaction);
+                    window.flutter_inappwebview.callHandler('reactionSuccess', 'Reacted to event: ' + eventId);
+                }).catch((error) => {
+                    console.error('Error reacting to event:', error);
+                    window.flutter_inappwebview.callHandler('error', 'Error: ' + error);
+                });
+            });
+        }
+
+        function subscribeToEvents(authorNpub, kind = 1) {
+            const filter = {
+                kinds: [kind],
+                authors: [authorNpub]
+            };
+
+            ndk.subscribe(filter, { closeOnEose: false }).then((subscription) => {
+                console.log('Subscribed to events:', subscription);
+                window.flutter_inappwebview.callHandler('subscriptionSuccess', 'Subscribed to events: ' + authorNpub);
+            }).catch((error) => {
+                console.error('Error subscribing to events:', error);
+                window.flutter_inappwebview.callHandler('error', 'Error: ' + error);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>NDK CDN</h1>
+</body>
+</html>
