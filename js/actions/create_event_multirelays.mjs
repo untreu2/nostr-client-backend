@@ -1,3 +1,4 @@
+// Import necessary packages from nostr-tools
 import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
 import { SimplePool } from 'nostr-tools/pool';
 import WebSocket from 'ws';
